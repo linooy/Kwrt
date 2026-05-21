@@ -17,7 +17,7 @@ on:
 
 env:
   TZ: Asia/Shanghai
-  TARGET: x86/64
+  TARGET: x86_64
 
 jobs:
   build:
