@@ -16,4 +16,16 @@ sed -i 's/DEFAULT_PACKAGES +=/DEFAULT_PACKAGES += kmod-fs-f2fs kmod-mmc kmod-sdh
 
 sed -i 's/256/1024/g' target/linux/x86/image/Makefile
 
-
+# === XhaxhWrt 品牌定制（覆盖上游 Kiddin'/Kwrt/openwrt.ai） ===
+# 这些在 common/diy.sh 的 "Kiddin'" 替换之后执行，覆盖回去
+sed -i "s/Kiddin'/power by xlin/g" package/base-files/files/etc/os-release
+sed -i "s/Kwrt/Xhaxhwrt/g" package/base-files/files/etc/os-release
+sed -i "s|https://openwrt.ai/||g" package/base-files/files/etc/os-release
+sed -i "s/Kiddin'/power by xlin/g" package/base-files/files/bin/config_generate
+sed -i "s/Kwrt/Xhaxhwrt/g" package/base-files/files/bin/config_generate
+sed -i "s/Kiddin'/power by xlin/g" package/base-files/image-config.in
+sed -i "s/Kwrt/Xhaxhwrt/g" package/base-files/image-config.in
+sed -i "s/Kiddin'/power by xlin/g" config/Config-images.in
+sed -i "s/Kwrt/Xhaxhwrt/g" config/Config-images.in
+sed -i "s/Kiddin'/power by xlin/g" include/version.mk
+sed -i "s/Kwrt/Xhaxhwrt/g" include/version.mk
