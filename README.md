@@ -1,4 +1,4 @@
-# XhaxhWrt-Compile
+# XhaxhWrt-Source
 
 > XhaxhWrt 源码编译固件，基于 [kiddin9/Kwrt](https://github.com/kiddin9/Kwrt)，x86_64 平台定制。
 
@@ -6,9 +6,9 @@
 
 从 OpenWrt 源码完整编译的自定义固件，适配 iKOOLCORE R2 Max 等 x86 软路由设备。
 
-与 [XhaxhWrt](https://github.com/linooy/XhaxhWrt)（ImageBuilder 快速构建）的区别：
+与 [XhaxhWrt-Builder](https://github.com/linooy/XhaxhWrt-Builder)（ImageBuilder 快速构建）的区别：
 
-| | XhaxhWrt-Compile | XhaxhWrt |
+| | XhaxhWrt-Source（本仓库） | XhaxhWrt-Builder |
 |---|---|---|
 | 方式 | 源码编译 (make) | ImageBuilder 拼包 |
 | 时间 | 2-3 小时 | 几分钟 |
