@@ -20,7 +20,12 @@ sed -i 's/256/1024/g' target/linux/x86/image/Makefile
 touch feeds/NOTICE feeds/LICENSE 2>/dev/null || true
 
 # Fix Docker build: openwrt-25.12 missing TARGET env var (master already fixed)
-sed -i '/\.\/scripts\/build\/binary/i\t\tTARGET=$(PKG_BUILD_DIR)/build \\' feeds/packages/utils/docker/Makefile 2>/dev/null || true
+python3 -c "
+f='feeds/packages/utils/docker/Makefile'
+c=open(f).read()
+c=c.replace('		./scripts/build/binary','		TARGET=\$(PKG_BUILD_DIR)/build \\\\\n		./scripts/build/binary',1)
+open(f,'w').write(c)
+" 2>/dev/null || true
 # === XhaxhWrt 品牌定制（覆盖上游 Kiddin'/Kwrt/openwrt.ai） ===
 # 这些在 common/diy.sh 的 "Kiddin'" 替换之后执行，覆盖回去
 sed -i "s/Kiddin'/power by xlin/g" package/base-files/files/etc/os-release
