@@ -27,15 +27,21 @@ c=c.replace('		./scripts/build/binary','		TARGET=\$(PKG_BUILD_DIR)/build \\\\\n	
 open(f,'w').write(c)
 " 2>/dev/null || true
 # Fix collectd build: LCC_VERSION_PATCH gets -rXX suffix from PKG_RELEASE (openwrt#17149)
-# The VERSION env var leaks from package-defaults.mk into autoreconf, corrupting lcc_features.h
-# Inject a Build/Prepare hook that patches lcc_features.h.in to hardcode LCC_VERSION_PATCH=0
-python3 -c "
-f='feeds/packages/utils/collectd/Makefile'
-c=open(f).read()
-hook='define Build/Prepare\n\t\$(call Build/Prepare/Default)\n\tsed -i "s/^\\(#define LCC_VERSION_PATCH\\) .*/\\1 0/" \$(PKG_BUILD_DIR)/src/libcollectdclient/collectd/lcc_features.h.in 2>/dev/null || true\nendef\n'
-c=c.replace('include \$(INCLUDE_DIR)/package.mk',hook+'\ninclude \$(INCLUDE_DIR)/package.mk',1)
-open(f,'w').write(c)
-" 2>/dev/null || true
+# Inject a Build/Prepare hook into the collectd Makefile to fix lcc_features.h.in
+cat > /tmp/fix_collectd.py << 'PYEOF'
+import re
+f = "feeds/packages/utils/collectd/Makefile"
+c = open(f).read()
+hook = """define Build/Prepare
+\t$(call Build/Prepare/Default)
+\tsed -i 's/^\\(#define LCC_VERSION_PATCH\\) .*/\\1 0/' $(PKG_BUILD_DIR)/src/libcollectdclient/collectd/lcc_features.h.in 2>/dev/null || true
+endef
+"""
+c = c.replace("include $(INCLUDE_DIR)/package.mk", hook + "\ninclude $(INCLUDE_DIR)/package.mk", 1)
+open(f, "w").write(c)
+PYEOF
+python3 /tmp/fix_collectd.py 2>/dev/null || true
+
 # === XhaxhWrt 品牌定制（覆盖上游 Kiddin'/Kwrt/openwrt.ai） ===
 # 这些在 common/diy.sh 的 "Kiddin'" 替换之后执行，覆盖回去
 sed -i "s/Kiddin'/power by xlin/g" package/base-files/files/etc/os-release
