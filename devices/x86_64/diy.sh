@@ -26,6 +26,22 @@ c=open(f).read()
 c=c.replace('		./scripts/build/binary','		TARGET=\$(PKG_BUILD_DIR)/build \\\\\n		./scripts/build/binary',1)
 open(f,'w').write(c)
 " 2>/dev/null || true
+# Fix collectd build: LCC_VERSION_PATCH includes PKG_RELEASE suffix (openwrt#17149)
+# Patch version-gen.sh to output clean version without -rXX suffix
+mkdir -p feeds/packages/utils/collectd/patches
+cat > feeds/packages/utils/collectd/patches/950-fix-version-string.patch << 'PATCHEOF'
+--- a/version-gen.sh
++++ b/version-gen.sh
+@@ -1,6 +1,6 @@
+ #!/bin/sh
+ 
+-DEFAULT_VERSION="5.12.0.git"
++DEFAULT_VERSION="5.12.0"
+ 
+ if [ -d .git ]; then
+ 	VERSION="`git describe --dirty=+ --abbrev=7 2> /dev/null | sed -e '/^collectd-/!d' -e 's///' -e 'y/-/./'`"
+PATCHEOF
+
 # === XhaxhWrt 品牌定制（覆盖上游 Kiddin'/Kwrt/openwrt.ai） ===
 # 这些在 common/diy.sh 的 "Kiddin'" 替换之后执行，覆盖回去
 sed -i "s/Kiddin'/power by xlin/g" package/base-files/files/etc/os-release
