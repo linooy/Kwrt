@@ -27,14 +27,13 @@ c=c.replace('		./scripts/build/binary','		TARGET=\$(PKG_BUILD_DIR)/build \\\\\n	
 open(f,'w').write(c)
 " 2>/dev/null || true
 # Fix collectd build: LCC_VERSION_PATCH gets -rXX suffix from PKG_RELEASE (openwrt#17149)
-# Inject a Build/Prepare hook into the collectd Makefile to fix lcc_features.h.in
+# Override Build/Configure to fix the GENERATED lcc_features.h after configure runs
 cat > /tmp/fix_collectd.py << 'PYEOF'
-import re
 f = "feeds/packages/utils/collectd/Makefile"
 c = open(f).read()
-hook = """define Build/Prepare
-\t$(call Build/Prepare/Default)
-\tsed -i 's/^\\(#define LCC_VERSION_PATCH\\) .*/\\1 0/' $(PKG_BUILD_DIR)/src/libcollectdclient/collectd/lcc_features.h.in 2>/dev/null || true
+hook = """define Build/Configure
+	$(call Build/Configure/Default)
+	sed -i 's/^\(#define LCC_VERSION_PATCH\) .*/\1 0/' $(PKG_BUILD_DIR)/src/libcollectdclient/collectd/lcc_features.h 2>/dev/null || true
 endef
 """
 c = c.replace("include $(INCLUDE_DIR)/package.mk", hook + "\ninclude $(INCLUDE_DIR)/package.mk", 1)
