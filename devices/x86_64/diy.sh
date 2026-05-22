@@ -17,7 +17,7 @@ sed -i 's/DEFAULT_PACKAGES +=/DEFAULT_PACKAGES += kmod-fs-f2fs kmod-mmc kmod-sdh
 sed -i 's/256/1024/g' target/linux/x86/image/Makefile
 
 # Fix missing NOTICE file for kiddin9 luci-base
-touch feeds/luci/NOTICE 2>/dev/null || true
+touch feeds/NOTICE feeds/LICENSE 2>/dev/null || true
 # === XhaxhWrt 品牌定制（覆盖上游 Kiddin'/Kwrt/openwrt.ai） ===
 # 这些在 common/diy.sh 的 "Kiddin'" 替换之后执行，覆盖回去
 sed -i "s/Kiddin'/power by xlin/g" package/base-files/files/etc/os-release
