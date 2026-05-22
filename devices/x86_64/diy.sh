@@ -26,22 +26,16 @@ c=open(f).read()
 c=c.replace('		./scripts/build/binary','		TARGET=\$(PKG_BUILD_DIR)/build \\\\\n		./scripts/build/binary',1)
 open(f,'w').write(c)
 " 2>/dev/null || true
-# Fix collectd build: LCC_VERSION_PATCH includes PKG_RELEASE suffix (openwrt#17149)
-# Patch version-gen.sh to output clean version without -rXX suffix
-mkdir -p feeds/packages/utils/collectd/patches
-cat > feeds/packages/utils/collectd/patches/950-fix-version-string.patch << 'PATCHEOF'
---- a/version-gen.sh
-+++ b/version-gen.sh
-@@ -1,6 +1,6 @@
- #!/bin/sh
- 
--DEFAULT_VERSION="5.12.0.git"
-+DEFAULT_VERSION="5.12.0"
- 
- if [ -d .git ]; then
- 	VERSION="`git describe --dirty=+ --abbrev=7 2> /dev/null | sed -e '/^collectd-/!d' -e 's///' -e 'y/-/./'`"
-PATCHEOF
-
+# Fix collectd build: LCC_VERSION_PATCH gets -rXX suffix from PKG_RELEASE (openwrt#17149)
+# The VERSION env var leaks from package-defaults.mk into autoreconf, corrupting lcc_features.h
+# Inject a Build/Prepare hook that patches lcc_features.h.in to hardcode LCC_VERSION_PATCH=0
+python3 -c "
+f='feeds/packages/utils/collectd/Makefile'
+c=open(f).read()
+hook='define Build/Prepare\n\t\$(call Build/Prepare/Default)\n\tsed -i "s/^\\(#define LCC_VERSION_PATCH\\) .*/\\1 0/" \$(PKG_BUILD_DIR)/src/libcollectdclient/collectd/lcc_features.h.in 2>/dev/null || true\nendef\n'
+c=c.replace('include \$(INCLUDE_DIR)/package.mk',hook+'\ninclude \$(INCLUDE_DIR)/package.mk',1)
+open(f,'w').write(c)
+" 2>/dev/null || true
 # === XhaxhWrt 品牌定制（覆盖上游 Kiddin'/Kwrt/openwrt.ai） ===
 # 这些在 common/diy.sh 的 "Kiddin'" 替换之后执行，覆盖回去
 sed -i "s/Kiddin'/power by xlin/g" package/base-files/files/etc/os-release
