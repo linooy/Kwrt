@@ -23,17 +23,21 @@ touch feeds/NOTICE feeds/LICENSE 2>/dev/null || true
 python3 -c "
 f='feeds/packages/utils/docker/Makefile'
 c=open(f).read()
-c=c.replace('		./scripts/build/binary','		TARGET=\$(PKG_BUILD_DIR)/build \\\\\n		./scripts/build/binary',1)
+c=c.replace('\t\t./scripts/build/binary','\t\tTARGET=\$(PKG_BUILD_DIR)/build \\\\\\
+\t\t./scripts/build/binary',1)
 open(f,'w').write(c)
 " 2>/dev/null || true
+
 # Fix collectd build: LCC_VERSION_PATCH gets -rXX suffix from PKG_RELEASE (openwrt#17149)
-# Override Build/Configure to fix the GENERATED lcc_features.h after configure runs
+# Root cause: OpenWrt VERSION=5.12.0-r54 leaks into autoreconf, corrupting @LCC_VERSION_PATCH@
+# Fix: inject Build/Configure hook to patch GENERATED lcc_features.h after configure
+# We use sed with \( \) capture groups (basic regex) — only 2 backslash levels needed
 cat > /tmp/fix_collectd.py << 'PYEOF'
 f = "feeds/packages/utils/collectd/Makefile"
 c = open(f).read()
 hook = """define Build/Configure
-	$(call Build/Configure/Default)
-	sed -i 's/^\(#define LCC_VERSION_PATCH\) .*/\1 0/' $(PKG_BUILD_DIR)/src/libcollectdclient/collectd/lcc_features.h 2>/dev/null || true
+\t$(call Build/Configure/Default)
+\tsed -i 's/\\(#define LCC_VERSION_PATCH\\) .*/\\1 0/' $(PKG_BUILD_DIR)/src/libcollectdclient/collectd/lcc_features.h 2>/dev/null || true
 endef
 """
 c = c.replace("include $(INCLUDE_DIR)/package.mk", hook + "\ninclude $(INCLUDE_DIR)/package.mk", 1)
